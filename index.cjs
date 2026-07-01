@@ -79,7 +79,15 @@ async function ensureAllTables() {
 ensureAllTables();
 
 // Custom handler for total stats
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
 async function handleTotal(req, res) {
+  setCorsHeaders(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
   try {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
     const result = await pool.query(
@@ -103,6 +111,8 @@ const walineApp = Application({
 });
 
 module.exports = async (req, res) => {
+  setCorsHeaders(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname === '/api/total') return handleTotal(req, res);
   return walineApp(req, res);
